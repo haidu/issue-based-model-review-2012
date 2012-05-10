@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Modelview
+Bundle-SymbolicName: plugin.modelview; singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: plugin.modelview.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.core.resources;bundle-version="3.7.101",
+ org.eclipse.ui.ide;bundle-version="3.7.0",
+ org.unicase.ui.navigator;bundle-version="0.4.8"
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
