@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="plugin.viewmodels.handler.Command"
+            id="plugin.viewmodels.command"
+            name="View Models">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="popup:org.unicase.ui.navigator.viewer">
+         <command
+               commandId="plugin.viewmodels.command"
+               label="View Name"
+               style="push">
+         </command>
+         <command
+               commandId="org.eclipse.ui.views.showView"
+               label="Show Model View"
+               style="push">
+            <parameter
+                  name="org.eclipse.ui.views.showView.viewId"
+                  value="plugin.viewmodels.modelview">
+            </parameter>
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:plugin.viewmodels.modelview">
+         <command
+               commandId="org.unicase.ui.common.commands.annotateIssue"
+               label="Annotate Issue"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            class="plugin.viewmodels.views.ModelView"
+            id="plugin.viewmodels.modelview"
+            name="Model View"
+            restorable="true">
+      </view>
+   </extension>
+
+</plugin>
