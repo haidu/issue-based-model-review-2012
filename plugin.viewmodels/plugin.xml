@@ -28,7 +28,8 @@
             locationURI="toolbar:plugin.viewmodels.modelview">
          <command
                commandId="org.unicase.ui.common.commands.annotateIssue"
-               label="Annotate Issue"
+               icon="Icons/Issue.gif"
+               label="Issue"
                style="push">
          </command>
       </menuContribution>
