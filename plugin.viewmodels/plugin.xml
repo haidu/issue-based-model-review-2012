@@ -14,11 +14,6 @@
       <menuContribution
             locationURI="popup:org.unicase.ui.navigator.viewer">
          <command
-               commandId="plugin.viewmodels.command"
-               label="View Name"
-               style="push">
-         </command>
-         <command
                commandId="org.eclipse.ui.views.showView"
                label="Show Model View"
                style="push">
@@ -30,7 +25,7 @@
       </menuContribution>
       <menuContribution
             allPopups="false"
-            locationURI="menu:plugin.viewmodels.modelview">
+            locationURI="toolbar:plugin.viewmodels.modelview">
          <command
                commandId="org.unicase.ui.common.commands.annotateIssue"
                label="Annotate Issue"
