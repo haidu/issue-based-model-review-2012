@@ -18,9 +18,9 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
-import org.unicase.metamodel.Project;
+/*import org.unicase.metamodel.Project;
 import org.unicase.workspace.Workspace;
-import org.unicase.workspace.WorkspaceManager;
+import org.unicase.workspace.WorkspaceManager;*/
 
 
 /**
@@ -176,13 +176,14 @@ public class ModelView extends ViewPart {
 		invisibleRoot = new TreeParent("");
 		try{			
 			/*======================================*/
-			System.out.println("*************");
+			/*System.out.println("*************");
 			Workspace currentWorkspace = WorkspaceManager.getInstance().getCurrentWorkspace();				
 
 			System.out.println("Current workspace: "+currentWorkspace.toString());
 			System.out.println("getActiveProjectSpace(): "+currentWorkspace.getActiveProjectSpace().getProject().toString());
 			for (int i=0; i < currentWorkspace.eContents().size(); i++)
 			{
+				//currentWorkspace.getActiveProjectSpace().getProject()
 				System.out.println("eContents "+ i +": "+currentWorkspace.eContents().get(i).toString());
 			}
 			for (int i=0; i < currentWorkspace.getProjectSpaces().size(); i++)
@@ -190,7 +191,7 @@ public class ModelView extends ViewPart {
 				System.out.println("currentWorkspace.getProjectSpaces("+ i +"): "+currentWorkspace.getProjectSpaces().get(i).toString());
 			}
 			System.out.println("currentWorkspace.getActiveProjectSpace().toString(): " + currentWorkspace.getActiveProjectSpace().toString());
-			/*
+			
 			Project currProjParent = null;
 			invisibleRoot.addChild((TreeObject) currentWorkspace.eContents().get(0));
 			if (currentWorkspace.getActiveProjectSpace() != null) {
@@ -242,7 +243,7 @@ public class ModelView extends ViewPart {
 	
 	public void createPartControl(Composite parent) {
 		
-		Workspace currentWorkspace = WorkspaceManager.getInstance().getCurrentWorkspace();
+		/*Workspace currentWorkspace = WorkspaceManager.getInstance().getCurrentWorkspace();
 		
 		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		viewer.setContentProvider(new ViewContentProvider());
@@ -253,7 +254,7 @@ public class ModelView extends ViewPart {
 		// Create the help context id for the viewer's control
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "plugin.modelview.viewer");
 		hookContextMenu();
-		hookDoubleClickAction();
+		hookDoubleClickAction();*/
 	}
 
 	private void hookContextMenu() {

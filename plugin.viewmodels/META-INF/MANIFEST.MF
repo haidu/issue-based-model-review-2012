@@ -7,7 +7,6 @@ Bundle-Activator: plugin.viewmodels.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.core.resources;bundle-version="3.7.101",
- org.unicase.workspace;bundle-version="0.4.8",
  org.eclipse.ui.ide;bundle-version="3.7.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7

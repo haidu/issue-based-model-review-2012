@@ -4,9 +4,13 @@
    <extension
          point="org.eclipse.ui.commands">
       <command
-            defaultHandler="plugin.viewmodels.handler.Command"
-            id="plugin.viewmodels.command"
+            defaultHandler="plugin.viewmodels.handlers.ViewModels"
+            id="plugin.viewmodels.viewCommand"
             name="View Models">
+      </command>
+      <command
+            id="plugin.viewmodels.command1"
+            name="test command">
       </command>
    </extension>
    <extension
@@ -14,13 +18,14 @@
       <menuContribution
             locationURI="popup:org.unicase.ui.navigator.viewer">
          <command
-               commandId="org.eclipse.ui.views.showView"
+               commandId="plugin.viewmodels.viewCommand"
                label="Show Model View"
                style="push">
-            <parameter
-                  name="org.eclipse.ui.views.showView.viewId"
-                  value="plugin.viewmodels.modelview">
-            </parameter>
+         </command>
+         <command
+               commandId="plugin.viewmodels.command1"
+               label="test h2"
+               style="push">
          </command>
       </menuContribution>
       <menuContribution
@@ -42,6 +47,13 @@
             name="Model View"
             restorable="true">
       </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="plugin.viewmodels.handlers.handler2"
+            commandId="plugin.viewmodels.command1">
+      </handler>
    </extension>
 
 </plugin>
