@@ -3,9 +3,14 @@ package plugin.viewmodels.views;
 import java.util.ArrayList;
 
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.widgets.Widget;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.jface.action.*;
 import org.eclipse.ui.*;
@@ -18,136 +23,34 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
-/*import org.unicase.metamodel.Project;
+import org.eclipse.emf.common.notify.Notification;
+import org.eclipse.emf.common.notify.impl.AdapterImpl;
+import org.eclipse.emf.common.util.EList;
+import org.unicase.metamodel.ModelElement;
+import org.unicase.metamodel.Project;
+import org.unicase.metamodel.util.ProjectChangeObserver;
+import org.unicase.model.UnicaseModelElement;
+import org.unicase.model.task.WorkPackage;
+import org.unicase.ui.common.util.EventUtil;
 import org.unicase.workspace.Workspace;
-import org.unicase.workspace.WorkspaceManager;*/
+import org.unicase.workspace.WorkspaceManager;
+import org.unicase.workspace.WorkspacePackage;
 
+public class ModelView extends ViewPart implements ProjectChangeObserver{
 
-/**
- * This sample class demonstrates how to plug-in a new
- * workbench view. The view shows data obtained from the
- * model. The sample creates a dummy model on the fly,
- * but a real implementation would connect to the model
- * available either in this or another plug-in (e.g. the workspace).
- * The view is connected to the model using a content provider.
- * <p>
- * The view uses a label provider to define how model
- * objects should be presented in the view. Each
- * view can present the same model objects using
- * different labels and icons, if needed. Alternatively,
- * a single label provider can be shared between views
- * in order to ensure that objects of the same type are
- * presented in the same way everywhere.
- * <p>
- */
-
-public class ModelView extends ViewPart {
-
-	/**
-	 * The ID of the view as specified by the extension.
-	 */
 	public static final String ID = "plugin.modelview.views.ModelView";
 
-	private TreeViewer viewer;
-	private TreeParent invisibleRoot;
-	/*
-	 * The content provider class is responsible for
-	 * providing objects to the view. It can wrap
-	 * existing objects in adapters or simply return
-	 * objects as-is. These objects may be sensitive
-	 * to the current input of the view, or ignore
-	 * it and always show the same content 
-	 * (like Task List, for example).
-	 */
-
-	class TreeObject implements IAdaptable {
-		private String name;
-		private TreeParent parent;
-		private IResource resource;
-		
-		public TreeObject(String name) {
-			this.name = name;
-		}
-		public String getName() {
-			return name;
-		}
-		public void setParent(TreeParent parent) {
-			this.parent = parent;
-		}
-		public TreeParent getParent() {
-			return parent;
-		}
-		public String toString() {
-			return getName();
-		}
-		public Object getAdapter(Class key) {
-			return null;
-		}
-	    protected IResource getResource() {
-	        return resource;
-	    }
-	    protected void setResouce(IResource resource) {
-	    	this.resource = resource;
-	    }
-		
-	}
+    private Project activeProject;
+    private UnicaseModelElement input;
 	
-	class TreeParent extends TreeObject {
-		private ArrayList children;
-		public TreeParent(String name) {
-			super(name);
-			children = new ArrayList();
-		}
-		public void addChild(TreeObject child) {
-			children.add(child);
-			child.setParent(this);
-		}
-		public void removeChild(TreeObject child) {
-			children.remove(child);
-			child.setParent(null);
-		}
-		public TreeObject [] getChildren() {
-			return (TreeObject [])children.toArray(new TreeObject[children.size()]);
-		}
-		public boolean hasChildren() {
-			return children.size()>0;
-		}
-	}
+    private AdapterImpl adapterImpl;
+	private TreeViewer treeViewer;
+	private Workspace workspace;
+	private TabFolder tabFolder;
 
-	class ViewContentProvider implements IStructuredContentProvider, 
-										   ITreeContentProvider {
-
-		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
-		}
-		public void dispose() {
-		}
-		public Object[] getElements(Object parent) {
-			if (parent.equals(getViewSite())) {
-				if (invisibleRoot==null) initialize();
-				return getChildren(invisibleRoot);
-			}
-			return getChildren(parent);
-		}
-		public Object getParent(Object child) {
-			if (child instanceof TreeObject) {
-				return ((TreeObject)child).getParent();
-			}
-			return null;
-		}
-		public Object [] getChildren(Object parent) {
-			if (parent instanceof TreeParent) {
-				return ((TreeParent)parent).getChildren();
-			}
-			return new Object[0];
-		}
-		public boolean hasChildren(Object parent) {
-			if (parent instanceof TreeParent)
-				return ((TreeParent)parent).hasChildren();
-			return false;
-		}
-
-
-	}
+    
+    private EList<ModelElement> modelElementList;
+	
 	class ViewLabelProvider extends LabelProvider {
 
 		public String getText(Object obj) {
@@ -155,152 +58,122 @@ public class ModelView extends ViewPart {
 		}
 		public Image getImage(Object obj) {
 			String imageKey = ISharedImages.IMG_OBJ_ELEMENT;
-			if (obj instanceof TreeParent)
-			   imageKey = ISharedImages.IMG_OBJ_FOLDER;
 			return PlatformUI.getWorkbench().getSharedImages().getImage(imageKey);
 		}
 	}
 	
-	class NameSorter extends ViewerSorter {
-	}
-	
-	/**
-	 * The constructor.
-	 */
 	public ModelView() {
-	}
-
-	
-	public void initialize() {
-		TreeParent projParent;
-		invisibleRoot = new TreeParent("");
-		try{			
-			/*======================================*/
-			/*System.out.println("*************");
-			Workspace currentWorkspace = WorkspaceManager.getInstance().getCurrentWorkspace();				
-
-			System.out.println("Current workspace: "+currentWorkspace.toString());
-			System.out.println("getActiveProjectSpace(): "+currentWorkspace.getActiveProjectSpace().getProject().toString());
-			for (int i=0; i < currentWorkspace.eContents().size(); i++)
-			{
-				//currentWorkspace.getActiveProjectSpace().getProject()
-				System.out.println("eContents "+ i +": "+currentWorkspace.eContents().get(i).toString());
-			}
-			for (int i=0; i < currentWorkspace.getProjectSpaces().size(); i++)
-			{
-				System.out.println("currentWorkspace.getProjectSpaces("+ i +"): "+currentWorkspace.getProjectSpaces().get(i).toString());
-			}
-			System.out.println("currentWorkspace.getActiveProjectSpace().toString(): " + currentWorkspace.getActiveProjectSpace().toString());
-			
-			Project currProjParent = null;
-			invisibleRoot.addChild((TreeObject) currentWorkspace.eContents().get(0));
-			if (currentWorkspace.getActiveProjectSpace() != null) {
-				currProjParent = currentWorkspace.getActiveProjectSpace().getProject();
-			}
-			*/
-			
-			System.out.println("*************");			
-			/*======================================*/
-			
-		    IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		    
-		    IProject[] projects = workspace.getRoot().getProjects();
-
-		    for (int i = 0; i < projects.length; i++) 
-		    {
-		    	IResource[] folderResources = projects[i].members();
-
-		        for (int j = 0; j < folderResources.length; j++) 
-		        {
-		        	if (folderResources[j] instanceof IFolder) 
-		        	{
-		        		IFolder resource = (IFolder) folderResources[j];
-		        		if (resource.getName().equalsIgnoreCase("model")) 
-		        		{
-		        			projParent = new TreeParent(projects[i].getName());
-		        			invisibleRoot.addChild(projParent);
-		        			
-		        			IResource[] fileResources = resource.members();		
-		        			for (int k = 0; k < fileResources.length; k++) 
-		        			{
-		        				if (fileResources[k] instanceof IFile && 
-		        						fileResources[k].getName().endsWith(".ecore"))
-		        				{
-		        					TreeObject obj = new TreeObject(fileResources[k]
-		        							.getName());
-		        					obj.setResouce(fileResources[k]);
-		        					projParent.addChild(obj);
-		        				}
-		        			}
-		        		}
-		        	}
-		        }
-		    }
-		    }catch (Exception e) {
-		    	// log exception
-		    	}
+		 this.input = null;
+		 
+		 workspace = WorkspaceManager.getInstance().getCurrentWorkspace();
+         if (workspace.getActiveProjectSpace() != null) {
+                 activeProject = workspace.getActiveProjectSpace().getProject();
+                 activeProject.addProjectChangeObserver(ModelView.this);        
+                 
+                 /*modelElementList = activeProject.getAllModelElements();                 
+                 
+                 System.out.println("*************");
+                 for (ModelElement tempElement : modelElementList)
+                 {
+                	 if (tempElement instanceof UnicaseModelElement){
+                		 System.out.println("Model Element: " + tempElement.toString());	 
+                	 }                	 
+                	 else
+                	 {
+                		 System.out.println("**NOT** a Model Element: " + tempElement.toString());
+                	 }
+                 }
+                 System.out.println("activePoject:  " + activeProject.toString());
+                 System.out.println("*************");*/
+                 
+         }
+         adapterImpl = new AdapterImpl() {
+             @Override
+             public void notifyChanged(Notification msg) {
+                     if ((msg.getFeatureID(Workspace.class)) == WorkspacePackage.WORKSPACE__ACTIVE_PROJECT_SPACE) {
+                             // remove old listeners
+                             if (activeProject != null) {
+                                     activeProject.removeProjectChangeObserver(ModelView.this);
+                             }
+                             // add listener to get notified when work items get deleted/added/changed
+                             if (workspace.getActiveProjectSpace() != null) {
+                                     activeProject = workspace.getActiveProjectSpace().getProject();
+                                     activeProject.addProjectChangeObserver(ModelView.this);
+                             } else {
+                                     try {
+                                             if (msg.getOldValue().equals(WorkspaceManager.getProjectSpace(activeProject))) {
+                                                     setInput(null);
+                                             }
+                                     } catch (IllegalStateException e) {
+                                             setInput(null);
+                                     }
+                             }
+                     }
+             }
+     };
 	}
 	
-	public void createPartControl(Composite parent) {
-		
-		/*Workspace currentWorkspace = WorkspaceManager.getInstance().getCurrentWorkspace();
-		
-		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-		viewer.setContentProvider(new ViewContentProvider());
-		viewer.setLabelProvider(new ViewLabelProvider());
-		viewer.setSorter(new NameSorter());
-		viewer.setInput(getViewSite());
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void createPartControl(Composite parent) {
+    	
+    	treeViewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+		treeViewer.setContentProvider(new ModelViewContentProvider());
+		treeViewer.setLabelProvider(new ModelViewLabelProvider());
+		treeViewer.setInput(activeProject);
+            
+    }
 
-		// Create the help context id for the viewer's control
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "plugin.modelview.viewer");
-		hookContextMenu();
-		hookDoubleClickAction();*/
-	}
+    public void setInput(UnicaseModelElement newInput) {
+        input = newInput;
+        refreshView();
+    }
+    
+    public void refreshView() {
+        if (input == null) {
+                return;
+        }
+        
+        System.out.println("IN REFRESH: " + WorkspaceManager.getProjectSpace(input).getProjectName());
+        
+        if (input instanceof WorkPackage) {
+            WorkPackage wp = (WorkPackage) input;
+        }
+    }
 
-	private void hookContextMenu() {
-		MenuManager menuMgr = new MenuManager("#PopupMenu");
-		Menu menu = menuMgr.createContextMenu(viewer.getControl());
-		viewer.getControl().setMenu(menu);
-		Action refresh = new Action(){
-			public void run(){
-				initialize();
-				viewer.refresh();
-			}
-		};
-		refresh.setText("Refresh");
-		menuMgr.add(refresh);
-		getSite().registerContextMenu(menuMgr, viewer);
-	}
-
-	private void hookDoubleClickAction() {
-		viewer.addDoubleClickListener(new IDoubleClickListener() {
-			public void doubleClick(DoubleClickEvent event) {
-				ISelection selection = event.getSelection();
-				Object obj = ((IStructuredSelection) selection).getFirstElement();
-				if (!(obj instanceof TreeObject)){
-					return;
-				}else{
-					TreeObject tempObj = (TreeObject) obj;
-					IFile ifile = ResourcesPlugin.getWorkspace().getRoot().
-							getFile(tempObj.getResource().getFullPath());
-					IWorkbenchPage dpage = ModelView.this.getViewSite()
-							.getWorkbenchWindow().getActivePage();
-					if (dpage != null){
-						try{
-							IDE.openEditor(dpage, ifile, true);
-						}catch (Exception e) {
-							// TODO: handle exception
-						}
-					}
-				}
-			}
-		});
-	}
-
-	/**
-	 * Passing the focus request to the viewer's control.
-	 */
 	public void setFocus() {
-		viewer.getControl().setFocus();
+        EventUtil.logFocusEvent("plugin.modelview.views.ModelView");
+	}
+
+	@Override
+	public void modelElementAdded(Project arg0, ModelElement arg1) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void modelElementDeleteCompleted(Project arg0, ModelElement arg1) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void modelElementDeleteStarted(Project arg0, ModelElement arg1) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void notify(Notification arg0, Project arg1, ModelElement arg2) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void projectDeleted(Project arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 }
