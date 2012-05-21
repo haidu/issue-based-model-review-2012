@@ -18,6 +18,12 @@
                label="Show Model View"
                style="push">
          </command>
+         <command
+               commandId="org.unicase.ui.common.commands.annotateIssue"
+               icon="Icons/Issue.gif"
+               label="Issue"
+               style="push">
+         </command>
       </menuContribution>
       <menuContribution
             allPopups="false"
