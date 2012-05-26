@@ -6,7 +6,12 @@
       <command
             defaultHandler="plugin.viewmodels.handlers.ViewModelsHandler"
             id="plugin.viewmodels.viewCommand"
-            name="View Models">
+            name="Open View">
+      </command>
+      <command
+            defaultHandler="plugin.viewmodels.handlers.ViewModelsEditorHandler"
+            id="plugin.viewmodels.viewEditorCommand"
+            name="Open Editor">
       </command>
    </extension>
    <extension
@@ -19,9 +24,14 @@
                style="push">
          </command>
          <command
+               commandId="plugin.viewmodels.viewEditorCommand"
+               label="Show Models Editor"
+               style="push">
+         </command>
+         <command
                commandId="org.unicase.ui.common.commands.annotateIssue"
                icon="Icons/Issue.gif"
-               label="Issue"
+               label="Add Issue Test"
                style="push">
          </command>
       </menuContribution>
@@ -44,6 +54,15 @@
             name="Model View"
             restorable="true">
       </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="plugin.viewmodels.editors.ModelViewEditor"
+            default="false"
+            id="plugin.viewmodels.modelvieweditor"
+            name="Model View Editor">
+      </editor>
    </extension>
 
 </plugin>

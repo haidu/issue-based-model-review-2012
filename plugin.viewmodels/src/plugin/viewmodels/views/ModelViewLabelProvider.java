@@ -5,13 +5,6 @@ import org.eclipse.emf.edit.ui.provider.AdapterFactoryLabelProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.swt.graphics.Image;
 
-
-/**
- * Label Provider for the estimate column. If the item is a workitem, it shows the estimate of the work item. If the
- * item is another modelelement, it aggregates the estimate of annotated workitems.
- * 
- * @author helming
- */
 public class ModelViewLabelProvider extends ColumnLabelProvider{
 
     private AdapterFactoryLabelProvider adapterFactoryLabelProvider;

@@ -16,9 +16,7 @@ public class ModelViewContentProvider extends AdapterFactoryContentProvider{
 		super (new ComposedAdapterFactory(ComposedAdapterFactory.Descriptor.Registry.INSTANCE));
 	}
 	
-    public Object[] getElements(Object object) {
-    	
-    	System.out.println("***OBJ CLASS is " + object.getClass().toString());   
+    public Object[] getElements(Object object) {    	
         return super.getElements(object);     
 
     }

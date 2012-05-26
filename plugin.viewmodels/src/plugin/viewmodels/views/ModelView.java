@@ -1,12 +1,14 @@
 package plugin.viewmodels.views;
 
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
-import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.ecore.EObject;
 import org.unicase.metamodel.ModelElement;
 import org.unicase.metamodel.Project;
 import org.unicase.metamodel.util.ProjectChangeObserver;
@@ -15,7 +17,7 @@ import org.unicase.ui.unicasecommon.common.util.UnicaseActionHelper;
 import org.unicase.workspace.Workspace;
 import org.unicase.workspace.WorkspaceManager;
 
-public class ModelView extends ViewPart implements ProjectChangeObserver {
+public class ModelView extends ViewPart implements ProjectChangeObserver, ISelectionListener {
 
 	public static final String ID = "plugin.modelview.views.ModelView";
 
@@ -23,8 +25,8 @@ public class ModelView extends ViewPart implements ProjectChangeObserver {
 	private TableViewer tableViewer;
 	private Workspace workspace;
 	private AdapterImpl adapterImpl;
-    private EList<ModelElement> modelElementList;
 	private UnicaseModelElement input;
+	private UnicaseModelElement eModelElement;
     
 	public ModelView() {		
 		
@@ -52,22 +54,7 @@ public class ModelView extends ViewPart implements ProjectChangeObserver {
 					}								
 			}
 		};
-		workspace.eAdapters().add(adapterImpl);           
-                 
-                 /*
-                 modelElementList = activeProject.getAllModelElements();             
-                 for (ModelElement tempElement : modelElementList)
-                 {
-                	 if (tempElement instanceof UnicaseModelElement){
-                		 System.out.println("Model Element: " + tempElement.toString());	 
-                	 }                	 
-                	 else
-                	 {
-                		 System.out.println("**NOT** a Model Element: " + tempElement.toString());
-                	 }
-                 }
-                 System.out.println("activePoject:  " + activeProject.toString());
-                 */                 
+		workspace.eAdapters().add(adapterImpl);
 	}
 	
     /**
@@ -78,11 +65,35 @@ public class ModelView extends ViewPart implements ProjectChangeObserver {
 		
 		tableViewer = new TableViewer(parent, SWT.FULL_SELECTION | SWT.VIRTUAL);
 		tableViewer.setContentProvider(new ModelViewContentProvider());
-		tableViewer.setLabelProvider(new ModelViewLabelProvider());
-		tableViewer.setInput(activeProject);
+		//tableViewer.setContentProvider(ArrayContentProvider.getInstance());
 
+		tableViewer.setLabelProvider(new ModelViewLabelProvider());
+		//tableViewer.setInput(activeProject.eAllContents());
+		tableViewer.setInput(activeProject);
+		
+		getSite().setSelectionProvider(tableViewer);
+		
+		addSelectionListener();
+		
 		hookDoubleClick();
     }  
+    
+    
+	private void addSelectionListener() {
+		tableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+
+			public void selectionChanged(SelectionChangedEvent event) {
+				if (event.getSelection() instanceof IStructuredSelection) {
+					IStructuredSelection structSelection = (IStructuredSelection) event.getSelection();
+					eModelElement = (UnicaseModelElement) structSelection.getFirstElement();
+					System.out.println("Name: " + eModelElement.getName() + " Description: " + eModelElement.getDescription());
+				}
+			}
+
+		});
+
+	}
+	
     
 	private void hookDoubleClick() {
 		tableViewer.addDoubleClickListener(new IDoubleClickListener() {
@@ -154,4 +165,49 @@ public class ModelView extends ViewPart implements ProjectChangeObserver {
 		tableViewer.setInput(null);
 		
 	}
+	
+	public TableViewer getTableViewer() {
+		return tableViewer;
+	}
+
+	@Override
+	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+		if (part == this) {
+			return;
+		}
+		EObject element = extractObjectFromSelection(selection);
+		if (element == null) {
+			return;
+		}
+		revealME(element);
+		
+	}
+	
+	private void revealME(EObject me) {
+
+		if (me == null) {
+			return;
+		}
+
+		else{
+			System.out.println("reveal me");
+			getTableViewer().setSelection(new StructuredSelection(me), true);
+		}
+	}
+	
+	private EObject extractObjectFromSelection(ISelection selection) {
+		if (!(selection instanceof IStructuredSelection)) {
+			return null;
+		}
+
+		IStructuredSelection structuredSelection = (IStructuredSelection) selection;
+		if (structuredSelection.size() == 1) {
+			Object node = structuredSelection.getFirstElement();
+			System.out.println("extract from selection");
+			return (EObject) node;
+		}
+
+		return null;
+	}	
+
 }
