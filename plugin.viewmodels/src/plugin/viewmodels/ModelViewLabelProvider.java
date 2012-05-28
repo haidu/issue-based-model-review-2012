@@ -1,4 +1,4 @@
-package plugin.viewmodels.views;
+package plugin.viewmodels;
 
 import org.eclipse.emf.edit.provider.ComposedAdapterFactory;
 import org.eclipse.emf.edit.ui.provider.AdapterFactoryLabelProvider;
